@@ -14,14 +14,17 @@ import androidx.compose.ui.res.*
 import androidx.compose.ui.unit.*
 import androidx.core.os.*
 import com.akexorcist.ruammij.R
+import java.util.Locale
 
 @Composable
 fun LanguageDropdownButton() {
     var expanded by remember { mutableStateOf(false) }
     val selectedLanguage = withoutEmptyLocale(
         AppCompatDelegate.getApplicationLocales().toLanguageTags(),
-        "th",
+        "en",
     )
+
+    ensureAppLocaleMatchingUiLanguage(selectedLanguage)
 
     Row(
         modifier = Modifier
@@ -82,8 +85,16 @@ fun LanguageDropdownButton() {
 }
 
 fun withoutEmptyLocale(appLocale: String, defaultLocale: String): String {
-    return when (appLocale.isEmpty()) {
-        true -> defaultLocale
-        false -> appLocale
-    }
+    var locale = appLocale
+
+    // If the appLocale is empty, Load system default locale
+    locale = locale.ifEmpty { Locale.getDefault().toLanguageTag() }
+
+    return locale.ifEmpty { defaultLocale }
+}
+
+fun ensureAppLocaleMatchingUiLanguage(appLocale: String) {
+    AppCompatDelegate.setApplicationLocales(
+        LocaleListCompat.forLanguageTags(appLocale)
+    )
 }
